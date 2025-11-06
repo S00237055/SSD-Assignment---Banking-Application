@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
+using System.IO;
+using SSD_Assignment___Banking_Application;
 
 namespace Banking_Application
 {
@@ -14,13 +16,15 @@ namespace Banking_Application
         private List<Bank_Account> accounts;
         public static String databaseName = "Banking Database.db";
         private static Data_Access_Layer instance = new Data_Access_Layer();
-        private string databasePassword;
+        //private string databasePassword;
+        private EncryptionService enc;
         private Data_Access_Layer()//Singleton Design Pattern (For Concurrency Control) - Use getInstance() Method Instead.
         {
+            enc = EncryptionService.getInstance();
             accounts = new List<Bank_Account>();
 
-            Console.WriteLine("Enter Database Password: ");
-            this.databasePassword = Console.ReadLine();
+            //Console.WriteLine("Enter Database Password: ");
+            //this.databasePassword = Console.ReadLine();
         }
 
         public static Data_Access_Layer getInstance()
@@ -35,7 +39,7 @@ namespace Banking_Application
             {
                 DataSource = Data_Access_Layer.databaseName,
                 Mode = SqliteOpenMode.ReadWriteCreate,
-                Password = this.databasePassword
+                //Password = this.databasePassword
             }.ToString();
 
             return new SqliteConnection(databaseConnectionString);
@@ -92,26 +96,32 @@ namespace Banking_Application
                         {
                             Current_Account ca = new Current_Account();
                             ca.accountNo = dr.GetString(0);
-                            ca.name = dr.GetString(1);
-                            ca.address_line_1 = dr.GetString(2);
-                            ca.address_line_2 = dr.GetString(3);
-                            ca.address_line_3 = dr.GetString(4);
-                            ca.town = dr.GetString(5);
-                            ca.balance = dr.GetDouble(6);
-                            ca.overdraftAmount = dr.GetDouble(8);
+
+                            //Decrypt all fields
+                            ca.name = enc.DecryptString(dr.GetString(1));
+                            ca.address_line_1 = enc.DecryptString(dr.GetString(2));
+                            ca.address_line_2 = enc.DecryptString(dr.GetString(3));
+                            ca.address_line_3 = enc.DecryptString(dr.GetString(4));
+                            ca.town = enc.DecryptString(dr.GetString(5));
+                            ca.balance = Convert.ToDouble(enc.DecryptString(dr.GetString(6)));
+                            if (!dr.IsDBNull(8))
+                                ca.overdraftAmount = Convert.ToDouble(enc.DecryptString(dr.GetString(8)));
+                            
                             accounts.Add(ca);
                         }
                         else
                         {
                             Savings_Account sa = new Savings_Account();
-                            sa.accountNo = dr.GetString(0);
-                            sa.name = dr.GetString(1);
-                            sa.address_line_1 = dr.GetString(2);
-                            sa.address_line_2 = dr.GetString(3);
-                            sa.address_line_3 = dr.GetString(4);
-                            sa.town = dr.GetString(5);
-                            sa.balance = dr.GetDouble(6);
-                            sa.interestRate = dr.GetDouble(9);
+                            sa.accountNo = enc.DecryptString(dr.GetString(0));
+                            sa.name = enc.DecryptString(dr.GetString(1));
+                            sa.address_line_1 = enc.DecryptString(dr.GetString(2));
+                            sa.address_line_2 = enc.DecryptString(dr.GetString(3));
+                            sa.address_line_3 = enc.DecryptString(dr.GetString(4));
+                            sa.town = enc.DecryptString(dr.GetString(5));
+                            sa.balance = Convert.ToDouble(enc.DecryptString(dr.GetString(6)));
+                            if (!dr.IsDBNull(8))
+                                sa.interestRate = Convert.ToDouble(enc.DecryptString(dr.GetString(9)));
+                            
                             accounts.Add(sa);
                         }
 
@@ -152,13 +162,13 @@ namespace Banking_Application
                 if (ba.GetType() == typeof(Current_Account))
                 {
                     Current_Account ca = (Current_Account)ba;
-                    command.CommandText += ca.overdraftAmount + ", NULL)";
+                    command.CommandText += enc.EncryptString(ca.overdraftAmount.ToString()) + ", NULL)";
                 }
 
                 else
                 {
                     Savings_Account sa = (Savings_Account)ba;
-                    command.CommandText += "NULL," + sa.interestRate + ")";
+                    command.CommandText += "NULL," + enc.EncryptString(sa.interestRate.ToString()) + ")";
                 }
 
                 command.ExecuteNonQuery();
@@ -247,7 +257,7 @@ namespace Banking_Application
                 {
                     connection.Open();
                     var command = connection.CreateCommand();
-                    command.CommandText = "UPDATE Bank_Accounts SET balance = " + toLodgeTo.balance + " WHERE accountNo = '" + toLodgeTo.accountNo + "'";
+                    command.CommandText = "UPDATE Bank_Accounts SET balance = " + enc.EncryptString(toLodgeTo.balance.ToString()) + " WHERE accountNo = '" + toLodgeTo.accountNo + "'";
                     command.ExecuteNonQuery();
 
                 }
@@ -284,7 +294,7 @@ namespace Banking_Application
                 {
                     connection.Open();
                     var command = connection.CreateCommand();
-                    command.CommandText = "UPDATE Bank_Accounts SET balance = " + toWithdrawFrom.balance + " WHERE accountNo = '" + toWithdrawFrom.accountNo + "'";
+                    command.CommandText = "UPDATE Bank_Accounts SET balance = " + enc.EncryptString(toWithdrawFrom.balance.ToString()) + " WHERE accountNo = '" + toWithdrawFrom.accountNo + "'";
                     command.ExecuteNonQuery();
 
                 }

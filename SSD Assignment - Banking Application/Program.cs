@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 
 namespace Banking_Application
 {
@@ -8,8 +9,22 @@ namespace Banking_Application
     {
         public static void Main(string[] args)
         {
-            
-            Data_Access_Layer dal = Data_Access_Layer.getInstance();
+
+            Data_Access_Layer dal;
+            try
+            {
+                dal = Data_Access_Layer.getInstance();
+            } 
+            catch (CryptographicException)
+            {
+                Console.WriteLine("Invalid encryption password. Exiting.");
+                return;
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine("Invalid encryption password. Exiting.");
+                return;
+            }
             dal.loadBankAccounts();
             bool running = true;
 
