@@ -14,10 +14,13 @@ namespace Banking_Application
         private List<Bank_Account> accounts;
         public static String databaseName = "Banking Database.db";
         private static Data_Access_Layer instance = new Data_Access_Layer();
-
+        private string databasePassword;
         private Data_Access_Layer()//Singleton Design Pattern (For Concurrency Control) - Use getInstance() Method Instead.
         {
             accounts = new List<Bank_Account>();
+
+            Console.WriteLine("Enter Database Password: ");
+            this.databasePassword = Console.ReadLine();
         }
 
         public static Data_Access_Layer getInstance()
@@ -27,11 +30,12 @@ namespace Banking_Application
 
         private SqliteConnection getDatabaseConnection()
         {
-
+            
             String databaseConnectionString = new SqliteConnectionStringBuilder()
             {
                 DataSource = Data_Access_Layer.databaseName,
-                Mode = SqliteOpenMode.ReadWriteCreate
+                Mode = SqliteOpenMode.ReadWriteCreate,
+                Password = this.databasePassword
             }.ToString();
 
             return new SqliteConnection(databaseConnectionString);
