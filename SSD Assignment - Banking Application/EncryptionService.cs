@@ -11,20 +11,118 @@ namespace SSD_Assignment___Banking_Application
     {
         private static EncryptionService instance = new EncryptionService();
         private readonly byte[] _key;
+        private readonly byte[] salt = { 232, 17, 89, 142, 87, 66, 96, 192 };
         private EncryptionService() 
         {
-            Console.WriteLine("Enter Encryption Password: ");
+            Console.WriteLine("Enter Password: ");
             string password = Console.ReadLine();
-
-            RandomNumberGenerator rng = RandomNumberGenerator.Create();
-
-            byte[] salt = new byte[8];
-            rng.GetBytes(salt);//Generare 64-Bit/8-Byte Random Value
-            Console.WriteLine("SALT Value: [{0}]", string.Join(", ", salt));//Output
-
+            
             Rfc2898DeriveBytes pbkdf2 = new Rfc2898DeriveBytes(password, salt, 10000, HashAlgorithmName.SHA512);//Create PBKDF2 Object - Do Not Change The Value 10,000; The Purpose Of This Value Will Be Explained In A Later Lecture.
-            byte[] key = pbkdf2.GetBytes(key_length_required);//Generate Encryption Key - Same Length As Data To Be Encrypted (In The Case Of A Stream Cipher).
+            this._key = pbkdf2.GetBytes(16);//Generate Encryption Key - Same Length As Data To Be Encrypted (In The Case Of A Stream Cipher).
 
+            Console.Clear();
+        }
+
+        public static EncryptionService getInstance()
+        {
+            return instance;
+        }
+
+        public byte[] Encrypt(byte[] plaintext_data, Aes aes)
+        {
+           
+            byte[] ciphertext_data;
+
+            ICryptoTransform encryptor = aes.CreateEncryptor();
+
+            MemoryStream msEncrypt = new MemoryStream();
+
+            CryptoStream csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write);
+            csEncrypt.Write(plaintext_data, 0, plaintext_data.Length);
+            csEncrypt.Dispose();
+
+            ciphertext_data = msEncrypt.ToArray();
+            msEncrypt.Dispose();
+
+            return ciphertext_data;
+        }
+
+        public byte[] Decrypt(byte[] ciphertext_data, Aes aes)
+        {
+            byte[] plaintext_data;
+
+            ICryptoTransform decryptor = aes.CreateDecryptor();
+
+            MemoryStream msDecrypt = new MemoryStream(ciphertext_data);
+
+            CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Write);
+            csDecrypt.Write(ciphertext_data, 0, ciphertext_data.Length);
+            csDecrypt.Dispose();
+
+            plaintext_data = msDecrypt.ToArray();
+            msDecrypt.Dispose();
+
+            return plaintext_data;
+        }
+
+        public string EncryptString(string plaintext) 
+        {
+            if (string.IsNullOrEmpty(plaintext))
+            {
+                return plaintext;
+            }
+
+            byte[] plaintext_data = Encoding.UTF8.GetBytes(plaintext);
+
+            using (Aes aes = Aes.Create())
+            {
+                aes.KeySize = 128;
+                aes.Key = _key;
+                aes.Mode = CipherMode.CBC;
+                aes.Padding = PaddingMode.PKCS7;
+
+                aes.GenerateIV();
+
+                byte[] iv = aes.IV;
+
+                byte[] ciphertext_data = Encrypt(plaintext_data, aes);
+                
+                return Convert.ToBase64String(iv) + ":" + Convert.ToBase64String(ciphertext_data);
+
+            }
+        }
+        public string DecryptString(string ciphertext)
+        {
+            if (string.IsNullOrEmpty(ciphertext))
+            {
+                return ciphertext;
+            }
+            try
+            {
+                string[] parts = ciphertext.Split(':');
+                if (parts.Length == 2) 
+                    throw new FormatException("Invalid ciphertext format.");
+
+                byte[] iv = Convert.FromBase64String(parts[0]);
+                byte[] ciphertext_data = Convert.FromBase64String(parts[1]);
+
+                using (Aes aes = Aes.Create())
+                {
+                    aes.KeySize = 128;
+                    aes.Key = _key;
+                    aes.IV = iv;
+                    aes.Mode = CipherMode.CBC;
+                    aes.Padding = PaddingMode.PKCS7;
+                    byte[] plaintext_data = Decrypt(ciphertext_data, aes);
+                    return Encoding.UTF8.GetString(plaintext_data);
+                }
+            }
+            catch (Exception)
+            {
+                return "[Decryption Failed]";
+            }
+            
+            
         }
 
     }
