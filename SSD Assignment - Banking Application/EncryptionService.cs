@@ -55,7 +55,7 @@ namespace SSD_Assignment___Banking_Application
 
             MemoryStream msDecrypt = new MemoryStream(ciphertext_data);
 
-            CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Write);
+            CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read);
             csDecrypt.Write(ciphertext_data, 0, ciphertext_data.Length);
             csDecrypt.Dispose();
 
@@ -100,7 +100,7 @@ namespace SSD_Assignment___Banking_Application
             try
             {
                 string[] parts = ciphertext.Split(':');
-                if (parts.Length == 2) 
+                if (parts.Length != 2) 
                     throw new FormatException("Invalid ciphertext format.");
 
                 byte[] iv = Convert.FromBase64String(parts[0]);

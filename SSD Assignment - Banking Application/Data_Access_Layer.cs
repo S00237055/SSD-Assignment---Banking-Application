@@ -61,10 +61,10 @@ namespace Banking_Application
                         address_line_2 TEXT,
                         address_line_3 TEXT,
                         town TEXT NOT NULL,
-                        balance REAL NOT NULL,
+                        balance TEXT NOT NULL,
                         accountType INTEGER NOT NULL,
-                        overdraftAmount REAL,
-                        interestRate REAL
+                        overdraftAmount TEXT,
+                        interestRate TEXT
                     ) WITHOUT ROWID
                 ";
 
@@ -112,14 +112,14 @@ namespace Banking_Application
                         else
                         {
                             Savings_Account sa = new Savings_Account();
-                            sa.accountNo = enc.DecryptString(dr.GetString(0));
+                            sa.accountNo = dr.GetString(0);
                             sa.name = enc.DecryptString(dr.GetString(1));
                             sa.address_line_1 = enc.DecryptString(dr.GetString(2));
                             sa.address_line_2 = enc.DecryptString(dr.GetString(3));
                             sa.address_line_3 = enc.DecryptString(dr.GetString(4));
                             sa.town = enc.DecryptString(dr.GetString(5));
                             sa.balance = Convert.ToDouble(enc.DecryptString(dr.GetString(6)));
-                            if (!dr.IsDBNull(8))
+                            if (!dr.IsDBNull(9))
                                 sa.interestRate = Convert.ToDouble(enc.DecryptString(dr.GetString(9)));
                             
                             accounts.Add(sa);
@@ -151,24 +151,24 @@ namespace Banking_Application
                 @"
                     INSERT INTO Bank_Accounts VALUES(" +
                     "'" + ba.accountNo + "', " +
-                    "'" + ba.name + "', " +
-                    "'" + ba.address_line_1 + "', " +
-                    "'" + ba.address_line_2 + "', " +
-                    "'" + ba.address_line_3 + "', " +
-                    "'" + ba.town + "', " +
-                    ba.balance + ", " +
+                    "'" + enc.EncryptString(ba.name) + "', " +
+                    "'" + enc.EncryptString(ba.address_line_1) + "', " +
+                    "'" + enc.EncryptString(ba.address_line_2) + "', " +
+                    "'" + enc.EncryptString(ba.address_line_3) + "', " +
+                    "'" + enc.EncryptString(ba.town) + "', " +
+                    "'" + enc.EncryptString(ba.balance.ToString()) + "', " +
                     (ba.GetType() == typeof(Current_Account) ? 1 : 2) + ", ";
 
                 if (ba.GetType() == typeof(Current_Account))
                 {
                     Current_Account ca = (Current_Account)ba;
-                    command.CommandText += enc.EncryptString(ca.overdraftAmount.ToString()) + ", NULL)";
+                    command.CommandText += enc.EncryptString(ca.overdraftAmount.ToString()) + "', NULL)";
                 }
 
                 else
                 {
                     Savings_Account sa = (Savings_Account)ba;
-                    command.CommandText += "NULL," + enc.EncryptString(sa.interestRate.ToString()) + ")";
+                    command.CommandText += "NULL," + enc.EncryptString(sa.interestRate.ToString()) + "')";
                 }
 
                 command.ExecuteNonQuery();
@@ -257,7 +257,7 @@ namespace Banking_Application
                 {
                     connection.Open();
                     var command = connection.CreateCommand();
-                    command.CommandText = "UPDATE Bank_Accounts SET balance = " + enc.EncryptString(toLodgeTo.balance.ToString()) + " WHERE accountNo = '" + toLodgeTo.accountNo + "'";
+                    command.CommandText = "UPDATE Bank_Accounts SET balance = '" + enc.EncryptString(toLodgeTo.balance.ToString()) + "' WHERE accountNo = '" + toLodgeTo.accountNo + "'";
                     command.ExecuteNonQuery();
 
                 }
@@ -294,7 +294,7 @@ namespace Banking_Application
                 {
                     connection.Open();
                     var command = connection.CreateCommand();
-                    command.CommandText = "UPDATE Bank_Accounts SET balance = " + enc.EncryptString(toWithdrawFrom.balance.ToString()) + " WHERE accountNo = '" + toWithdrawFrom.accountNo + "'";
+                    command.CommandText = "UPDATE Bank_Accounts SET balance = '" + enc.EncryptString(toWithdrawFrom.balance.ToString()) + "' WHERE accountNo = '" + toWithdrawFrom.accountNo + "'";
                     command.ExecuteNonQuery();
 
                 }
