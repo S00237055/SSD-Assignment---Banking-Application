@@ -288,7 +288,8 @@ namespace Banking_Application
                                 switch (ans)
                                 {
                                     case "Y":
-                                    case "y": dal.closeBankAccount(accNo);
+                                    case "y": 
+                                        
                                         Console.WriteLine("\n*** Administrator approval required ***");
                                         Console.WriteLine("Enter Admin Username: ");
                                         string adminUser = Console.ReadLine();
@@ -305,13 +306,13 @@ namespace Banking_Application
                                                 if (pc.ValidateCredentials(adminUser, adminPass))
                                                 {
                                                     UserPrincipal admin = UserPrincipal.FindByIdentity(pc, adminUser);
-                                                    if (admin != null && admin.IsMemberOf(pc, IdentityType.Name, "Bank Administrator"))
+                                                    if (admin != null && admin.IsMemberOf(pc, IdentityType.Name, "Bank Teller Administrator"))
                                                     {
                                                         adminApproved = true;
                                                     }
                                                     else
                                                     {
-                                                        Console.WriteLine("Approval Failed. User is not a Bank Administrator");
+                                                        Console.WriteLine("Approval Failed. User is not a Bank Teller Administrator");
                                                     }
                                                 }
                                                 else
@@ -362,7 +363,7 @@ namespace Banking_Application
                         {
                             Console.WriteLine(ba.ToString());
 
-                            Logger.LogTransaction(tellerName, accNo, ba.name, "View Account Information");
+                            Logger.LogTransaction(tellerName, accNo, ba.name, "Balance Query");
                         }
 
                         break;
