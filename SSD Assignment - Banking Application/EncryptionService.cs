@@ -50,17 +50,19 @@ namespace SSD_Assignment___Banking_Application
         public byte[] Decrypt(byte[] ciphertext_data, Aes aes)
         {
             byte[] plaintext_data;
-
             ICryptoTransform decryptor = aes.CreateDecryptor();
 
-            MemoryStream msDecrypt = new MemoryStream(ciphertext_data);
-
-            CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read);
-            csDecrypt.Write(ciphertext_data, 0, ciphertext_data.Length);
-            csDecrypt.Dispose();
-
-            plaintext_data = msDecrypt.ToArray();
-            msDecrypt.Dispose();
+            using (MemoryStream msDecrypt = new MemoryStream(ciphertext_data))
+            {
+                using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
+                {
+                    using (MemoryStream output = new MemoryStream())
+                    {
+                        csDecrypt.CopyTo(output);
+                        plaintext_data = output.ToArray();
+                    }
+                }
+            } 
 
             return plaintext_data;
         }

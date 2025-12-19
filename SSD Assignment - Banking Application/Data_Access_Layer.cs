@@ -162,13 +162,13 @@ namespace Banking_Application
                 if (ba.GetType() == typeof(Current_Account))
                 {
                     Current_Account ca = (Current_Account)ba;
-                    command.CommandText += enc.EncryptString(ca.overdraftAmount.ToString()) + "', NULL)";
+                    command.CommandText += "'" + enc.EncryptString(ca.overdraftAmount.ToString()) + "', NULL)";
                 }
 
                 else
                 {
                     Savings_Account sa = (Savings_Account)ba;
-                    command.CommandText += "NULL," + enc.EncryptString(sa.interestRate.ToString()) + "')";
+                    command.CommandText += "NULL,'" + enc.EncryptString(sa.interestRate.ToString()) + "')";
                 }
 
                 command.ExecuteNonQuery();

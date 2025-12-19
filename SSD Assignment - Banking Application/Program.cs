@@ -14,6 +14,7 @@ namespace Banking_Application
             try
             {
                 dal = Data_Access_Layer.getInstance();
+                dal.loadBankAccounts();
             } 
             catch (CryptographicException)
             {
@@ -25,7 +26,7 @@ namespace Banking_Application
                 Console.WriteLine("Invalid encryption password. Exiting.");
                 return;
             }
-            dal.loadBankAccounts();
+          
             bool running = true;
 
             do
