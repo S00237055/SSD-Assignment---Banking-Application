@@ -12,13 +12,15 @@ namespace Banking_Application
         {
 
             Data_Access_Layer dal;
+            string tellerName = "";
             try
             {
                 dal = Data_Access_Layer.getInstance();
                 dal.loadBankAccounts();
 
+
                 Console.WriteLine("Enter Teller Name: ");
-                string tellerName = Console.ReadLine();
+                tellerName = Console.ReadLine();
                 Logger.LogLogin(tellerName, true);
             } 
             catch (CryptographicException)
@@ -213,7 +215,7 @@ namespace Banking_Application
                         String accNo = dal.addBankAccount(ba);
 
                         Console.WriteLine("New Account Number Is: " + accNo);
-
+                        Logger.LogTransaction(tellerName, accNo, ba.name, "Account Creation");
                         break;
                     case "2":
                         Console.WriteLine("Enter Account Number: ");
@@ -241,6 +243,8 @@ namespace Banking_Application
                                 {
                                     case "Y":
                                     case "y": dal.closeBankAccount(accNo);
+                                        Logger.LogTransaction(tellerName, accNo, ba.name, "Account Closure");
+                                        Console.WriteLine("Account Closed.");
                                         break;
                                     case "N":
                                     case "n":
@@ -266,6 +270,8 @@ namespace Banking_Application
                         else
                         {
                             Console.WriteLine(ba.ToString());
+
+                            Logger.LogTransaction(tellerName, accNo, ba.name, "View Account Information");
                         }
 
                         break;
@@ -306,6 +312,16 @@ namespace Banking_Application
                             } while (amountToLodge < 0);
 
                             dal.lodge(accNo, amountToLodge);
+
+                            string reason = "N/A";
+                            if (amountToLodge > 10000)
+                            {
+                                Console.WriteLine("Enter Reason For Lodgement (Required For Amounts Over €10,000): ");
+                                reason = Console.ReadLine();
+                            }
+
+                            Logger.LogTransaction(tellerName, accNo, ba.name, "Lodgement", amountToLodge.ToString(), reason);
+                            Console.WriteLine("Lodgement Successful.");
                         }
                         break;
                     case "5": //Withdraw
@@ -350,6 +366,18 @@ namespace Banking_Application
                             {
 
                                 Console.WriteLine("Insufficient Funds Available.");
+                            }
+                            else
+                            {
+                                string reason = "N/A";
+                                if (amountToWithdraw > 10000)
+                                {
+                                    Console.WriteLine("Enter Reason For Lodgement (Required For Amounts Over €10,000): ");
+                                    reason = Console.ReadLine();
+                                }
+
+                                Logger.LogTransaction(tellerName, accNo, ba.name, "Withdrawal", amountToWithdraw.ToString(), reason);
+                                Console.WriteLine("Withdrawal Successful.");
                             }
                         }
                         break;
