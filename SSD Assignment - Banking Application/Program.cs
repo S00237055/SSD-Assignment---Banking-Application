@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SSD_Assignment___Banking_Application;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
@@ -15,6 +16,10 @@ namespace Banking_Application
             {
                 dal = Data_Access_Layer.getInstance();
                 dal.loadBankAccounts();
+
+                Console.WriteLine("Enter Teller Name: ");
+                string tellerName = Console.ReadLine();
+                Logger.LogLogin(tellerName, true);
             } 
             catch (CryptographicException)
             {
