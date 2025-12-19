@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using System.Net;
+using System.Reflection;
 
 namespace SSD_Assignment___Banking_Application
 {
@@ -45,7 +47,46 @@ namespace SSD_Assignment___Banking_Application
             if (amount != "N/A")
                 sb.AppendLine($"Amount: {amount}");
 
+            //WHERE
+            string ipAddress = Dns.GetHostEntry(Dns.GetHostName()).AddressList[0].ToString();
+            sb.AppendLine($"Where (IP): {ipAddress}");
 
+            //WHEN
+            sb.AppendLine($"When: {DateTime.Now}");
+
+            //WHY
+            if (amount != "N/A" && double.TryParse(amount, out double val) && val > 10000)
+            {
+                sb.AppendLine($"Why (Reason): {reason}");   
+            }
+
+            //HOW
+            var assembly = Assembly.GetExecutingAssembly();
+            sb.AppendLine($"How (App Name): {assembly.GetName().Name}");
+            sb.AppendLine($"How (Version): {assembly.GetName().Version}");
+
+            try
+            {
+                EventLog.WriteEntry(SourceName, sb.ToString(), EventLogEntryType.Information);
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Logger Error: Failed to write to event log. {ex.Message}");
+            }
+        }
+
+        public static void LogLogin(string tellerName, bool success)
+        {
+            string message = success ? $"Successful Login: {tellerName}" : $"Failed Login Attempt: {tellerName}";
+            EventLogEntryType type = success ? EventLogEntryType.Information : EventLogEntryType.Warning;
+
+            try
+            {
+                EventLog.WriteEntry(SourceName, message, type);
+
+            }
+            catch { }
         }
     }
 }
