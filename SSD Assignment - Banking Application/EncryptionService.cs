@@ -14,7 +14,7 @@ namespace SSD_Assignment___Banking_Application
         private readonly byte[] salt = { 232, 17, 89, 142, 87, 66, 96, 192 };
         private EncryptionService() 
         {
-            Console.WriteLine("Enter Password: ");
+            Console.WriteLine("Enter Database Encryption Password: ");
             string password = Console.ReadLine();
             
             Rfc2898DeriveBytes pbkdf2 = new Rfc2898DeriveBytes(password, salt, 10000, HashAlgorithmName.SHA512);//Create PBKDF2 Object - Do Not Change The Value 10,000; The Purpose Of This Value Will Be Explained In A Later Lecture.
