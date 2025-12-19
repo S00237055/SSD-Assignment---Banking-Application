@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Reflection;
 using System.Security.Cryptography;
+using System.IO;
 
 namespace SSD_Assignment___Banking_Application
 {
@@ -49,6 +50,8 @@ namespace SSD_Assignment___Banking_Application
                 sb.AppendLine($"Amount: {amount}");
 
             //WHERE
+           
+
             string ipAddress = Dns.GetHostEntry(Dns.GetHostName()).AddressList[0].ToString();
             sb.AppendLine($"Where (IP): {ipAddress}");
 
