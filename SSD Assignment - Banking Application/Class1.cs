@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Net;
 using System.Reflection;
+using System.Security.Cryptography;
 
 namespace SSD_Assignment___Banking_Application
 {
@@ -67,6 +68,22 @@ namespace SSD_Assignment___Banking_Application
 
             try
             {
+                if (File.Exists(assembly.Location))
+                {
+                    using (var stream = File.OpenRead(assembly.Location))
+                    using (var sha = SHA256.Create())
+                    {
+                        byte[] hash = sha.ComputeHash(stream);
+                        sb.AppendLine($"How (Hash): {BitConverter.ToString(hash).Replace("-", "")}");
+                    }
+                }
+
+            }
+            catch (Exception ex) { 
+                sb.AppendLine($"How (Hash): Could not calcualte ({ex.Message})");
+            }
+
+            try { 
                 EventLog.WriteEntry(SourceName, sb.ToString(), EventLogEntryType.Information);
 
             }
