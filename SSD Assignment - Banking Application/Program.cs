@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
+using System.DirectoryServices.AccountManagement;
 
 namespace Banking_Application
 {
@@ -13,15 +14,60 @@ namespace Banking_Application
 
             Data_Access_Layer dal;
             string tellerName = "";
+            bool isAuthenticated = false;
+
             try
             {
                 dal = Data_Access_Layer.getInstance();
                 dal.loadBankAccounts();
 
+                while (!isAuthenticated)
+                {
+                    Console.WriteLine("\n--- BANK SYSTEM LOGIN ---");
+                    Console.WriteLine("Enter Teller Name: ");
+                    string userName = Console.ReadLine();
 
-                Console.WriteLine("Enter Teller Name: ");
-                tellerName = Console.ReadLine();
-                Logger.LogLogin(tellerName, true);
+                    Console.WriteLine("Enter Password: ");
+                    string password = Console.ReadLine();
+
+                    try
+                    {
+                        using (PrincipalContext pc = new PrincipalContext(ContextType.Domain, "ITSLIGO.LAN"))
+                        {
+                            bool isValid = pc.ValidateCredentials(userName, password);
+                            if (isValid)
+                            {
+                                UserPrincipal user = UserPrincipal.FindByIdentity(pc, userName);
+
+                                if (user != null && user.IsMemberOf(pc, IdentityType.Name, "Bank Teller"))
+                                {
+                                    isAuthenticated = true;
+                                    tellerName = userName;
+                                    Console.WriteLine("Login Successful. Welcome " + tellerName + "!");
+                                    Logger.LogLogin(tellerName, true);
+
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Access Denied. You are not a member");
+                                    Logger.LogLogin(tellerName, false);
+                                }
+                            }
+                            else
+                            {
+                                Console.WriteLine("Invalid Teller Name or Password. Please Try Again.");
+                                Logger.LogLogin(tellerName, false);
+                            }
+
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("An error occurred during authentication: " + ex.Message);
+                        Console.WriteLine("Ensure you are connected to the University Network");
+                    }
+                }
+                
             } 
             catch (CryptographicException)
             {
