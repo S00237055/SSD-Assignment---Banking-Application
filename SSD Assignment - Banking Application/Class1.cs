@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace SSD_Assignment___Banking_Application
 {
@@ -17,8 +18,9 @@ namespace SSD_Assignment___Banking_Application
             {
                 if (!EventLog.SourceExists(SourceName))
                 {
-                    EventLog.CreateSource(SourceName, LogName);
-
+                    EventLog.CreateEventSource(SourceName, LogName);
+                    Console.WriteLine("CreatedEventSource");
+                    Console.WriteLine("Exiting, execute the application a second time to use the source.");
                 }
 
             }
@@ -29,7 +31,7 @@ namespace SSD_Assignment___Banking_Application
             }
         }
 
-        public static void LogTransaction(string tellerName, string accountNo, string accountHolder, string transactionType, string amount = "N/A", string = "N/A")
+        public static void LogTransaction(string tellerName, string accountNo, string accountHolder, string transactionType, string amount = "N/A", string reason = "N/A")
         {
             StringBuilder sb = new StringBuilder();
 
