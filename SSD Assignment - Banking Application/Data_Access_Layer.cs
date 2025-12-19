@@ -16,15 +16,14 @@ namespace Banking_Application
         private List<Bank_Account> accounts;
         public static String databaseName = "Banking Database.db";
         private static Data_Access_Layer instance = new Data_Access_Layer();
-        //private string databasePassword;
         private EncryptionService enc;
+
         private Data_Access_Layer()//Singleton Design Pattern (For Concurrency Control) - Use getInstance() Method Instead.
         {
             enc = EncryptionService.getInstance();
             accounts = new List<Bank_Account>();
 
-            //Console.WriteLine("Enter Database Password: ");
-            //this.databasePassword = Console.ReadLine();
+            
         }
 
         public static Data_Access_Layer getInstance()
