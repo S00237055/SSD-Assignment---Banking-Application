@@ -289,9 +289,54 @@ namespace Banking_Application
                                 {
                                     case "Y":
                                     case "y": dal.closeBankAccount(accNo);
-                                        Logger.LogTransaction(tellerName, accNo, ba.name, "Account Closure");
-                                        Console.WriteLine("Account Closed.");
-                                        break;
+                                        Console.WriteLine("\n*** Administrator approval required ***");
+                                        Console.WriteLine("Enter Admin Username: ");
+                                        string adminUser = Console.ReadLine();
+                                        Console.WriteLine("Enter Admin Password: ");
+                                        string adminPass = Console.ReadLine();
+
+                                        bool adminApproved = false;
+
+                                        try
+                                        {
+                                            using (PrincipalContext pc = new PrincipalContext(ContextType.Domain, "ITSLIGO.LAN"))
+                                            {
+
+                                                if (pc.ValidateCredentials(adminUser, adminPass))
+                                                {
+                                                    UserPrincipal admin = UserPrincipal.FindByIdentity(pc, adminUser);
+                                                    if (admin != null && admin.IsMemberOf(pc, IdentityType.Name, "Bank Administrator"))
+                                                    {
+                                                        adminApproved = true;
+                                                    }
+                                                    else
+                                                    {
+                                                        Console.WriteLine("Approval Failed. User is not a Bank Administrator");
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    Console.WriteLine("Approval Failed. Invalid Credentials");
+                                                }
+                                            }
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            Console.WriteLine("An error occurred during authentication: " + ex.Message);
+                                            Console.WriteLine("Ensure you are connected to the University Network");
+                                        }
+
+                                        if (adminApproved)
+                                        {
+                                            dal.closeBankAccount(accNo);
+                                            Logger.LogTransaction(tellerName, accNo, ba.name, "Account Closure", "N/A", $"Approved by Admin: {adminUser}");
+                                            Console.WriteLine("Account Closed Successfully.");
+                                        }
+                                        else
+                                        {
+                                            Console.WriteLine("Account Closure Not Approved. Administration Approval was not granted.");
+                                        }
+                                            break;
                                     case "N":
                                     case "n":
                                         break;
